@@ -22,7 +22,7 @@ func (s *Server) createTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	task, err := s.taskManager.CreateTask(p.Name)
+	task, err := s.taskManager.CreateTask(r.Context(), p.Name)
 	if err != nil {
 		s.logger.Error("createTaskHandler: unable to create task: ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -35,7 +35,7 @@ func (s *Server) createTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) listTasksHandler(w http.ResponseWriter, r *http.Request) {
 
-	tasks := s.taskManager.ListTasks()
+	tasks := s.taskManager.ListTasks(r.Context())
 
 	encoder := json.NewEncoder(w)
 
@@ -50,7 +50,7 @@ func (s *Server) listTasksHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getTaskHandler(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
-	task, err := s.taskManager.GetTask(id)
+	task, err := s.taskManager.GetTask(r.Context(), id)
 	if err == taskpkg.ErrTaskNotFound {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -82,7 +82,7 @@ func (s *Server) updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	id := mux.Vars(r)["id"]
 
-	task, err := s.taskManager.UpdateTask(id, p.Name)
+	task, err := s.taskManager.UpdateTask(r.Context(), id, p.Name)
 	if err == taskpkg.ErrTaskNotFound {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -100,7 +100,7 @@ func (s *Server) updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
-	err := s.taskManager.DeleteTask(id)
+	err := s.taskManager.DeleteTask(r.Context(), id)
 	if err == taskpkg.ErrTaskNotFound {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return

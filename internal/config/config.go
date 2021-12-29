@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 // Config hold the configuration for todo server.
@@ -27,6 +28,14 @@ type Config struct {
 	// LogFormat can be [json, json-pretty, text]
 	// Default will be text
 	LogFormat string
+
+	// TracingAgentURI instructs exporter to send spans to jaeger-agent at this address.
+	// For example, http://localhost:6831
+	TracingAgentURI string
+
+	// TracingCollectorURI is the full url to the Jaeger HTTP Thrift collector.
+	// For example, http://localhost:14268/api/traces
+	TracingCollectorURI string
 }
 
 // GetEnv return the environment variable by its key, returning its value
@@ -54,13 +63,27 @@ func Init(ctx context.Context) (cfg *Config, err error) {
 		return nil, fmt.Errorf("server port and debug port should be different. Both listening on port \"%v\"!", cfg.Port)
 	}
 
+	cfg.SetTracingOps()
+
 	return cfg, nil
 }
 
 // Dump outputs the current config information to the given Writer.
-func (c *Config) Dump(w io.Writer) error {
+func (cfg *Config) Dump(w io.Writer) error {
 	fmt.Fprint(w, "config: ")
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "    ")
-	return enc.Encode(c)
+	return enc.Encode(cfg)
+}
+
+func (cfg *Config) SetTracingOps() {
+	tracingAgentEndPoint := strings.Trim(GetEnv("JAEGER_AGENT_ENDPOINT", ""), "/")
+	if tracingAgentEndPoint != "" {
+		cfg.TracingAgentURI = fmt.Sprintf("http://%s", tracingAgentEndPoint)
+	}
+
+	tracingCollectorEndPoint := strings.Trim(GetEnv("JAEGER_COLLECTOR_ENDPOINT", ""), "/")
+	if tracingCollectorEndPoint != "" {
+		cfg.TracingCollectorURI = fmt.Sprintf("http://%s/api/traces", tracingCollectorEndPoint)
+	}
 }

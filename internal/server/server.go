@@ -34,7 +34,7 @@ func New(cfg config.Config) *Server {
 	}
 }
 
-func (s *Server) Run(ctx context.Context) {
+func (s *Server) Run(ctx context.Context, cfg config.Config) {
 
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM)
@@ -48,7 +48,7 @@ func (s *Server) Run(ctx context.Context) {
 		task.TaskDeletedCountView,
 	)
 
-	if err := telementry.Init(views...); err != nil {
+	if err := telementry.Init(cfg, views...); err != nil {
 		s.logger.Fatal(ctx, err)
 	}
 

@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"go.opencensus.io/trace"
 )
 
 var (
@@ -27,9 +29,13 @@ func NewInMemoryTaskManager() *InMemory {
 	}
 }
 
-func (i *InMemory) CreateTask(name string) (task Task, err error) {
+func (i *InMemory) CreateTask(ctx context.Context, name string) (task Task, err error) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
+
+	ctx, span := trace.StartSpan(ctx, "InMemoryTaskManager.CreateTask")
+	defer span.End()
+
 	i.counter++
 	task = Task{
 		Id:        strconv.Itoa(i.counter),
@@ -43,9 +49,12 @@ func (i *InMemory) CreateTask(name string) (task Task, err error) {
 	return task, nil
 }
 
-func (i *InMemory) DeleteTask(id string) (err error) {
+func (i *InMemory) DeleteTask(ctx context.Context, id string) (err error) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
+
+	ctx, span := trace.StartSpan(ctx, "InMemoryTaskManager.DeleteTask")
+	defer span.End()
 
 	task, ok := i.mTask[id]
 	if !ok {
@@ -59,9 +68,12 @@ func (i *InMemory) DeleteTask(id string) (err error) {
 
 }
 
-func (i *InMemory) GetTask(id string) (_ Task, err error) {
+func (i *InMemory) GetTask(ctx context.Context, id string) (_ Task, err error) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
+
+	ctx, span := trace.StartSpan(ctx, "InMemoryTaskManager.GetTask")
+	defer span.End()
 
 	task, ok := i.mTask[id]
 	if !ok {
@@ -70,9 +82,12 @@ func (i *InMemory) GetTask(id string) (_ Task, err error) {
 	return *task.Value.(*Task), nil
 }
 
-func (i *InMemory) UpdateTask(id, name string) (_ Task, err error) {
+func (i *InMemory) UpdateTask(ctx context.Context, id, name string) (_ Task, err error) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
+
+	ctx, span := trace.StartSpan(ctx, "InMemoryTaskManager.UpdateTask")
+	defer span.End()
 
 	lElement, ok := i.mTask[id]
 	if !ok {
@@ -87,9 +102,12 @@ func (i *InMemory) UpdateTask(id, name string) (_ Task, err error) {
 
 }
 
-func (i *InMemory) ListTasks() []Task {
+func (i *InMemory) ListTasks(ctx context.Context) []Task {
 	i.mu.Lock()
 	defer i.mu.Unlock()
+
+	ctx, span := trace.StartSpan(ctx, "InMemoryTaskManager.ListTasks")
+	defer span.End()
 
 	tasks := make([]Task, i.tasks.Len())
 	k := i.tasks.Len() - 1

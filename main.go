@@ -38,5 +38,5 @@ func main() {
 	}
 
 	s := server.New(*cfg)
-	s.Run(ctx)
+	s.Run(ctx, *cfg)
 }

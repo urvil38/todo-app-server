@@ -5,10 +5,13 @@ import (
 	"net/http"
 	"strings"
 
+	"contrib.go.opencensus.io/exporter/jaeger"
 	"contrib.go.opencensus.io/exporter/prometheus"
 	"github.com/gorilla/mux"
+	"github.com/urvil38/todo-app/internal/config"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/stats/view"
+	"go.opencensus.io/trace"
 	"go.opencensus.io/zpages"
 )
 
@@ -56,9 +59,27 @@ const debugPage = `
 `
 
 // Init configures tracing and aggregation according to the given Views.
-func Init(views ...*view.View) error {
+func Init(cfg config.Config, views ...*view.View) error {
+
+	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
+
 	if err := view.Register(views...); err != nil {
 		return fmt.Errorf("debug.Init(views): view.Register: %v", err)
+	}
+
+	if cfg.TracingAgentURI != "" && cfg.TracingCollectorURI != "" {
+
+		je, err := jaeger.NewExporter(jaeger.Options{
+			AgentEndpoint:     cfg.TracingAgentURI,
+			CollectorEndpoint: cfg.TracingCollectorURI,
+			ServiceName:       "todo-app",
+		})
+
+		if err != nil {
+			return fmt.Errorf("Failed to create the Jaeger exporter: %v", err)
+		}
+
+		trace.RegisterExporter(je)
 	}
 
 	return nil
@@ -66,7 +87,9 @@ func Init(views ...*view.View) error {
 
 // NewServer creates a new http.Handler for serving debug information.
 func NewServer() (http.Handler, error) {
-	pe, err := prometheus.NewExporter(prometheus.Options{})
+	pe, err := prometheus.NewExporter(prometheus.Options{
+		Namespace: "todo-app",
+	})
 	if err != nil {
 		return nil, fmt.Errorf("debug.NewServer: prometheus.NewExporter: %v", err)
 	}

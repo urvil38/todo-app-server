@@ -1,6 +1,7 @@
 package task
 
 import (
+	"context"
 	"fmt"
 	"time"
 )
@@ -20,9 +21,9 @@ func (t TimeStamp) MarshalJSON() ([]byte, error) {
 }
 
 type Manager interface {
-	CreateTask(name string) (Task, error)
-	UpdateTask(id, name string) (Task, error)
-	DeleteTask(id string) error
-	ListTasks() []Task
-	GetTask(id string) (Task, error)
+	CreateTask(ctx context.Context, name string) (Task, error)
+	UpdateTask(ctx context.Context, id, name string) (Task, error)
+	DeleteTask(ctx context.Context, id string) error
+	ListTasks(ctx context.Context) []Task
+	GetTask(ctx context.Context, id string) (Task, error)
 }
