@@ -41,7 +41,7 @@ func (s *Server) listTasksHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := encoder.Encode(tasks)
 	if err != nil {
-		s.logger.Error("createTaskHandler: json encoding err: ", err)
+		s.logger.Error("listTasksHandler: json encoding err: ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

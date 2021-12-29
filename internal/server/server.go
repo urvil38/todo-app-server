@@ -41,7 +41,12 @@ func (s *Server) Run(ctx context.Context) {
 
 	router := telementry.NewRouter(nil)
 	s.Install(router.Handle)
-	views := telementry.ServerViews
+
+	views := append(ServerViews,
+		task.TaskCreatedCountView,
+		task.TaskUpdatedCountView,
+		task.TaskDeletedCountView,
+	)
 
 	if err := telementry.Init(views...); err != nil {
 		s.logger.Fatal(ctx, err)
@@ -53,8 +58,10 @@ func (s *Server) Run(ctx context.Context) {
 	)
 
 	s.server = &http.Server{
-		Addr:    s.listenAddr,
-		Handler: mw(router),
+		Addr:         s.listenAddr,
+		Handler:      mw(router),
+		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  10 * time.Second,
 	}
 
 	go s.start()

@@ -47,6 +47,12 @@ clean:
 go-build:
 	GOOS=$(GOOS) $(GO) build -o $(BIN) -ldflags $(LDFLAGS)
 
+.PHONY: run
+run: run-server
+
+run-server:
+	$(GO) run main.go
+
 .PHONY: test
 test: go-test
 

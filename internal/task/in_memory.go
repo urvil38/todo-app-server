@@ -2,6 +2,7 @@ package task
 
 import (
 	"container/list"
+	"context"
 	"errors"
 	"strconv"
 	"sync"
@@ -38,6 +39,7 @@ func (i *InMemory) CreateTask(name string) (task Task, err error) {
 	}
 	ee := i.tasks.PushFront(&task)
 	i.mTask[task.Id] = ee
+	recordTaskCreate(context.Background())
 	return task, nil
 }
 
@@ -52,6 +54,7 @@ func (i *InMemory) DeleteTask(id string) (err error) {
 
 	i.tasks.Remove(task)
 	delete(i.mTask, id)
+	recordTaskDelete(context.Background())
 	return nil
 
 }
@@ -79,7 +82,7 @@ func (i *InMemory) UpdateTask(id, name string) (_ Task, err error) {
 	task := lElement.Value.(*Task)
 	task.Name = name
 	task.UpdatedAt = TimeStamp(time.Now())
-
+	recordTaskUpdate(context.Background())
 	return *task, nil
 
 }
