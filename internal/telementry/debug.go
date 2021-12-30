@@ -87,9 +87,7 @@ func Init(cfg config.Config, views ...*view.View) error {
 
 // NewServer creates a new http.Handler for serving debug information.
 func NewServer() (http.Handler, error) {
-	pe, err := prometheus.NewExporter(prometheus.Options{
-		Namespace: "todo-app",
-	})
+	pe, err := prometheus.NewExporter(prometheus.Options{})
 	if err != nil {
 		return nil, fmt.Errorf("debug.NewServer: prometheus.NewExporter: %v", err)
 	}
