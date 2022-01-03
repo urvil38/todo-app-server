@@ -9,11 +9,6 @@ import (
 // initialize logger
 var logger = logrus.New()
 
-func init() {
-	// setting logger output to stdout
-	logger.SetOutput(os.Stdout)
-}
-
 // Config defines format and level of logging for logger
 type Config struct {
 	// Format can be text | json | json-pretty. Default format is text.
@@ -24,6 +19,8 @@ type Config struct {
 
 // Set setting up logger using given configuration
 func Set(c Config) {
+
+	logger.SetOutput(os.Stdout)
 
 	switch c.Format {
 	case "text":
