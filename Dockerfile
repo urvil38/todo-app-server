@@ -14,8 +14,8 @@ RUN make go-build
 
 FROM alpine
 
-RUN apk --no-cache add iptables ca-certificates && \
-    update-ca-certificates curl
+RUN apk --no-cache add ca-certificates && \
+    update-ca-certificates
 
 RUN mkdir /app
 
