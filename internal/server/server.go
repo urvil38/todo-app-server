@@ -17,6 +17,7 @@ import (
 	"github.com/urvil38/todo-app/internal/middleware"
 	"github.com/urvil38/todo-app/internal/task"
 	"github.com/urvil38/todo-app/internal/telementry"
+	"github.com/urvil38/todo-app/internal/version"
 )
 
 type Server struct {
@@ -77,6 +78,9 @@ type MuxHandler func(route string, handler http.Handler) *mux.Route
 func (s *Server) Install(handle MuxHandler) {
 	handle("/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "OK")
+	}))
+	handle("/version", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, fmt.Sprintf("version: %v\ncommit: %v", version.Version, version.Commit))
 	}))
 	handle("/task", middleware.Json()(http.HandlerFunc(s.createTaskHandler))).Methods("POST")
 	handle("/tasks", middleware.Json()(http.HandlerFunc(s.listTasksHandler))).Methods("GET")

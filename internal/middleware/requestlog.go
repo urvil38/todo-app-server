@@ -24,7 +24,7 @@ type handler struct {
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	severity := logrus.InfoLevel
-	if r.Method == http.MethodGet && r.URL.Path == "/health" {
+	if r.Method == http.MethodGet && (r.URL.Path == "/health" || r.URL.Path == "/version") {
 		severity = logrus.DebugLevel
 	}
 

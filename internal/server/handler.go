@@ -60,7 +60,7 @@ func (s *Server) getTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = encoder.Encode(task)
 	if err != nil {
-		s.logger.Error("listTasksHandler: json encoding err: ", err)
+		s.logger.Error("getTaskHandler: json encoding err: ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

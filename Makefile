@@ -1,6 +1,6 @@
 VERSION := 0.0.1
 GO := go
-GOOS := $(go env GOOS)
+GOOS := $(shell go env GOOS)
 
 NAME := todo-app
 BIN := todo-app-server
