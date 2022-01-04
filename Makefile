@@ -1,6 +1,7 @@
 VERSION := 0.0.1
 GO := go
 GOOS := $(shell go env GOOS)
+CGO_ENABLED := 0
 
 NAME := todo-app
 BIN := todo-app-server
@@ -45,7 +46,7 @@ clean:
 	rm -f $(BIN) -y
 
 go-build:
-	GOOS=$(GOOS) $(GO) build -o $(BIN) -ldflags $(LDFLAGS)
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) $(GO) build -o $(BIN) -ldflags $(LDFLAGS)
 
 .PHONY: run
 run: run-server
