@@ -2,14 +2,19 @@ package telementry
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
 	"contrib.go.opencensus.io/exporter/jaeger"
+	"contrib.go.opencensus.io/exporter/ocagent"
 	"contrib.go.opencensus.io/exporter/prometheus"
+	prom_client "github.com/prometheus/client_golang/prometheus"
 	"github.com/gorilla/mux"
 	"github.com/urvil38/todo-app/internal/config"
+	"github.com/urvil38/todo-app/internal/version"
 	"go.opencensus.io/plugin/ochttp"
+	"go.opencensus.io/plugin/runmetrics"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/trace"
 	"go.opencensus.io/zpages"
@@ -60,7 +65,6 @@ const debugPage = `
 
 // Init configures tracing and aggregation according to the given Views.
 func Init(cfg config.Config, views ...*view.View) error {
-
 	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 
 	if err := view.Register(views...); err != nil {
@@ -82,12 +86,36 @@ func Init(cfg config.Config, views ...*view.View) error {
 		trace.RegisterExporter(je)
 	}
 
+	exp, err := ocagent.NewExporter(ocagent.WithInsecure(), ocagent.WithServiceName("todo-app"))
+	if err != nil {
+		log.Fatalf("Failed to create the agent exporter: %v", err)
+	}
+
+	trace.RegisterExporter(exp)
+
+	err = runmetrics.Enable(runmetrics.RunMetricOptions{
+		EnableCPU:    true,
+		EnableMemory: true,
+		UseDerivedCumulative: true,
+		Prefix:       "todo_app/",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return nil
 }
 
 // NewServer creates a new http.Handler for serving debug information.
 func NewServer() (http.Handler, error) {
-	pe, err := prometheus.NewExporter(prometheus.Options{})
+	pe, err := prometheus.NewExporter(prometheus.Options{
+		ConstLabels: prom_client.Labels{
+			"version": version.Version,
+			"rev": version.Commit,
+			"service": "todo-server",
+			"environment": "dev",
+		},
+	})
 	if err != nil {
 		return nil, fmt.Errorf("debug.NewServer: prometheus.NewExporter: %v", err)
 	}
