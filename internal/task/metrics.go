@@ -46,14 +46,14 @@ var (
 	}
 )
 
-func recordTaskCreate(ctx context.Context) {
+func RecordTaskCreate(ctx context.Context) {
 	stats.Record(ctx, taskCreateCount.M(1))
 }
 
-func recordTaskUpdate(ctx context.Context) {
+func RecordTaskUpdate(ctx context.Context) {
 	stats.Record(ctx, taskUpdateCount.M(1))
 }
 
-func recordTaskDelete(ctx context.Context) {
+func RecordTaskDelete(ctx context.Context) {
 	stats.Record(ctx, taskDeleteCount.M(1))
 }

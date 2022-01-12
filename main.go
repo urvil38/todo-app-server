@@ -19,24 +19,18 @@ func main() {
 		stdlog.Fatal(err)
 	}
 
-	log.Set(log.Config{
-		Format: cfg.LogFormat,
-		Level:  cfg.LogLevel,
-	})
-
-	logger := log.Get()
-	cfg.Dump(logger.Writer())
+	cfg.Dump(log.Logger.Out)
 
 	if cfg.DebugPort != "" {
 		debugServer, err := telementry.NewServer()
 		if err != nil {
-			logger.Fatal(ctx, err)
+			log.Logger.Fatal(ctx, err)
 		}
 		dAddr := cfg.Addr + ":" + cfg.DebugPort
 		go http.ListenAndServe(dAddr, debugServer)
-		logger.Info("debug server is running on: ", dAddr)
+		log.Logger.Info("debug server is running on: ", dAddr)
 	}
 
-	s := server.New(*cfg)
+	s := server.New(ctx, *cfg)
 	s.Run(ctx, *cfg)
 }

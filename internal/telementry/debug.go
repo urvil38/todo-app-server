@@ -6,11 +6,10 @@ import (
 	"net/http"
 	"strings"
 
-	"contrib.go.opencensus.io/exporter/jaeger"
 	"contrib.go.opencensus.io/exporter/ocagent"
 	"contrib.go.opencensus.io/exporter/prometheus"
-	prom_client "github.com/prometheus/client_golang/prometheus"
 	"github.com/gorilla/mux"
+	prom_client "github.com/prometheus/client_golang/prometheus"
 	"github.com/urvil38/todo-app/internal/config"
 	"github.com/urvil38/todo-app/internal/version"
 	"go.opencensus.io/plugin/ochttp"
@@ -71,21 +70,6 @@ func Init(cfg config.Config, views ...*view.View) error {
 		return fmt.Errorf("debug.Init(views): view.Register: %v", err)
 	}
 
-	if cfg.TracingAgentURI != "" && cfg.TracingCollectorURI != "" {
-
-		je, err := jaeger.NewExporter(jaeger.Options{
-			AgentEndpoint:     cfg.TracingAgentURI,
-			CollectorEndpoint: cfg.TracingCollectorURI,
-			ServiceName:       "todo-app",
-		})
-
-		if err != nil {
-			return fmt.Errorf("Failed to create the Jaeger exporter: %v", err)
-		}
-
-		trace.RegisterExporter(je)
-	}
-
 	exp, err := ocagent.NewExporter(ocagent.WithInsecure(), ocagent.WithServiceName("todo-app"))
 	if err != nil {
 		log.Fatalf("Failed to create the agent exporter: %v", err)
@@ -94,10 +78,10 @@ func Init(cfg config.Config, views ...*view.View) error {
 	trace.RegisterExporter(exp)
 
 	err = runmetrics.Enable(runmetrics.RunMetricOptions{
-		EnableCPU:    true,
-		EnableMemory: true,
+		EnableCPU:            true,
+		EnableMemory:         true,
 		UseDerivedCumulative: true,
-		Prefix:       "todo_app/",
+		Prefix:               "todo_app/",
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -110,9 +94,9 @@ func Init(cfg config.Config, views ...*view.View) error {
 func NewServer() (http.Handler, error) {
 	pe, err := prometheus.NewExporter(prometheus.Options{
 		ConstLabels: prom_client.Labels{
-			"version": version.Version,
-			"rev": version.Commit,
-			"service": "todo-server",
+			"version":     version.Version,
+			"rev":         version.Commit,
+			"service":     "todo-server",
 			"environment": "dev",
 		},
 	})

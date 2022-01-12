@@ -14,7 +14,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/urvil38/todo-app/internal/config"
 	"github.com/urvil38/todo-app/internal/log"
+	"github.com/urvil38/todo-app/internal/memory"
 	"github.com/urvil38/todo-app/internal/middleware"
+	"github.com/urvil38/todo-app/internal/postgres"
 	"github.com/urvil38/todo-app/internal/task"
 	"github.com/urvil38/todo-app/internal/telementry"
 	"github.com/urvil38/todo-app/internal/version"
@@ -27,12 +29,19 @@ type Server struct {
 	taskManager task.Manager
 }
 
-func New(cfg config.Config) *Server {
-	return &Server{
+func New(ctx context.Context,cfg config.Config) *Server {
+	s := Server{
 		listenAddr:  cfg.Addr + ":" + cfg.Port,
-		logger:      log.Get(),
-		taskManager: task.NewInMemoryTaskManager(),
+		logger:      log.Logger,
 	}
+
+	if cfg.UseDB {
+		s.taskManager = postgres.NewTaskManager(ctx, cfg)
+	} else {
+		s.taskManager = memory.NewTaskManager()
+	}
+
+	return &s
 }
 
 func (s *Server) Run(ctx context.Context, cfg config.Config) {

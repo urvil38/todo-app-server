@@ -2,13 +2,18 @@ package task
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 )
 
+var (
+	ErrTaskNotFound = errors.New("task not found")
+)
+
 type Task struct {
 	Id        string    `json:"id"`
-	Name      string    `json:"task_name"`
+	Name      string    `json:"name"`
 	CreatedAt TimeStamp `json:"created_at"`
 	UpdatedAt TimeStamp `json:"updated_at"`
 }
@@ -21,9 +26,25 @@ func (t TimeStamp) MarshalJSON() ([]byte, error) {
 }
 
 type Manager interface {
+	TaskCreator
+	TaskUpdater
+	TaskDeleter
+	TaskGetter
+}
+
+type TaskCreator interface {
 	CreateTask(ctx context.Context, name string) (Task, error)
+}
+
+type TaskUpdater interface {
 	UpdateTask(ctx context.Context, id, name string) (Task, error)
+}
+
+type TaskDeleter interface {
 	DeleteTask(ctx context.Context, id string) error
-	ListTasks(ctx context.Context) []Task
+}
+
+type TaskGetter interface {
 	GetTask(ctx context.Context, id string) (Task, error)
+	ListTasks(ctx context.Context) ([]Task,error)
 }

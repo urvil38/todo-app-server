@@ -14,17 +14,46 @@ make build
 
 | Name  |  Value  | Default Value  | Info
 |:-----:|:---------------:|:--------------:|:---------|
-|TODO_ADDRESS|0.0.0.0|0.0.0.0|Address on which server is running
+|TODO_ADDRESS|0.0.0.0|localhost|Address on which server is running
 |TODO_PORT|8080|8080|TCP port on which server is listening
 |TODO_DEBUG_PORT|8081|8081|TCP port on which debug server is listening. Debug port should be different from the server port
 |TODO_LOG_LEVEL|info, error, debug|info|LogLevel can be [info, debug, error, fatal]. If invalid log level is provided then info log level will be used as default
 |TODO_LOG_FORMAT|text, json, json-pretty|text|LogFormat can be [json, json-pretty, text]
-|JAEGER_AGENT_ENDPOINT|localhost:6831|""|TracingAgentURI instructs exporter to send spans to jaeger-agent at this address
-|JAEGER_COLLECTOR_ENDPOINT|localhost:14268|""|TracingCollectorURI is the full url to the Jaeger HTTP Thrift collector
+|TODO_DATABASE_HOST|localhost|localhost| DB Host Address
+|TODO_DATABASE_USER|postgres|postgres| DB User
+|TODO_DATABASE_PASSWORD|""|""| DB Password
+|TODO_DATABASE_PORT|5432|5432| DB Port
+|TODO_DATABASE_NAME|todo-db|todo-db| DB Name
+|TODO_USE_DB|""|false|Whether to use postgres to store tasks or not. Default value is false, in that case tasks will be store in memory.
+
+### Set Up local Postgres DB:
+
+- Run postgres using docker
+
+```
+docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e LANG=C postgres:11.12
+```
+
+After running postgres, create database and migrate schema as following:
+
+```
+TODO_DATABASE_PASSWORD=postgres ./devtools/create_local_db.sh
+```
 
 ### Run Server:
+
+- Store tasks in memory
+
 ```
-./todo-app-server
+TODO_LOG_LEVEL=debug ./todo-app-server
+```
+
+OR
+
+- Store tasks in db
+
+```
+TODO_DATABASE_PASSWORD=postgres TODO_USE_DB=true TODO_LOG_LEVEL=debug ./todo-app-server
 ```
 
 ## API
@@ -35,7 +64,7 @@ make build
 curl --request POST \
   --url http://localhost:8080/task \
   --header 'Content-Type: application/json' \
-  --data '{"task_name": "task1"}'
+  --data '{"name": "task1"}'
 ```
 
 ### Get Task:
@@ -58,7 +87,7 @@ curl --request GET \
 curl --request POST \
   --url http://localhost:8080/task/1 \
   --header 'Content-Type: application/json' \
-  --data '{"task_name": "updated_task_1"}'
+  --data '{"name": "updated_task_1"}'
 ```
 
 ### Delete Task:

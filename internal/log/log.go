@@ -1,13 +1,14 @@
 package log
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/sirupsen/logrus"
 )
 
 // initialize logger
-var logger = logrus.New()
+var Logger = logrus.New()
 
 // Config defines format and level of logging for logger
 type Config struct {
@@ -18,19 +19,19 @@ type Config struct {
 }
 
 // Set setting up logger using given configuration
-func Set(c Config) {
+func Set(c Config) error {
 
-	logger.SetOutput(os.Stdout)
+	Logger.SetOutput(os.Stdout)
 
 	switch c.Format {
 	case "text":
-		logger.SetFormatter(&logrus.TextFormatter{TimestampFormat: "2006-01-02 15:04:05", DisableSorting: true, FullTimestamp: true, DisableLevelTruncation: true, DisableColors: true})
+		Logger.SetFormatter(&logrus.TextFormatter{TimestampFormat: "2006-01-02 15:04:05", DisableSorting: true, FullTimestamp: true, DisableLevelTruncation: true, DisableColors: true})
 	case "json-pretty":
-		logger.SetFormatter(&logrus.JSONFormatter{PrettyPrint: true, TimestampFormat: "2006-01-02 15:04:05"})
+		Logger.SetFormatter(&logrus.JSONFormatter{PrettyPrint: true, TimestampFormat: "2006-01-02 15:04:05"})
 	case "json":
 		fallthrough
 	default:
-		logger.SetFormatter(&logrus.JSONFormatter{TimestampFormat: "2006-01-02 15:04:05"})
+		Logger.SetFormatter(&logrus.JSONFormatter{TimestampFormat: "2006-01-02 15:04:05"})
 	}
 
 	level := logrus.InfoLevel
@@ -38,13 +39,14 @@ func Set(c Config) {
 		var err error
 		level, err = logrus.ParseLevel(c.Level)
 		if err != nil {
-			logrus.Fatalf("Unable to parse log level: %v", err)
+			return fmt.Errorf("Unable to parse log level: %w", err)
 		}
 	}
-	logger.SetLevel(level)
+	Logger.SetLevel(level)
+	return nil
 }
 
 // Get returns an instance of logger
 func Get() *logrus.Logger {
-	return logger
+	return Logger
 }
