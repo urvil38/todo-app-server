@@ -36,8 +36,8 @@ func (i *TaskManager) CreateTask(ctx context.Context, name string) (t task.Task,
 	t = task.Task{
 		Id:        strconv.Itoa(i.counter),
 		Name:      name,
-		CreatedAt: task.TimeStamp(time.Now()),
-		UpdatedAt: task.TimeStamp(time.Now()),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 	ee := i.tasks.PushFront(&t)
 	i.mTask[t.Id] = ee
@@ -92,7 +92,7 @@ func (i *TaskManager) UpdateTask(ctx context.Context, id, name string) (_ task.T
 
 	t := lElement.Value.(*task.Task)
 	t.Name = name
-	t.UpdatedAt = task.TimeStamp(time.Now())
+	t.UpdatedAt = time.Now()
 	task.RecordTaskUpdate(context.Background())
 	return *t, nil
 

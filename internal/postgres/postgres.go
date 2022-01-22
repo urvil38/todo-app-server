@@ -4,18 +4,17 @@ import (
 	"context"
 	"fmt"
 
-	_ "github.com/jackc/pgx/v4/stdlib"
 	"contrib.go.opencensus.io/integrations/ocsql"
+	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/urvil38/todo-app/internal/config"
 	"github.com/urvil38/todo-app/internal/database"
 	"github.com/urvil38/todo-app/internal/log"
 )
 
-
 func OpenDB(ctx context.Context, cfg *config.Config) (_ *DB, err error) {
 
 	// Wrap the postgres driver with our own wrapper, which adds OpenCensus instrumentation.
-	ocDriver, err := database.RegisterOCWrapper("pgx", ocsql.WithAllTraceOptions())
+	ocDriver, err := ocsql.Register("pgx", ocsql.WithAllTraceOptions())
 	if err != nil {
 		return nil, fmt.Errorf("unable to register the ocsql driver: %v", err)
 	}

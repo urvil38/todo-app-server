@@ -100,7 +100,7 @@ func (tm *TaskManager) ListTasks(ctx context.Context) ([]task.Task, error) {
 		return nil
 	}
 
-	err := tm.db.db.RunQuery(ctx, "SELECT * FROM tasks", collect)
+	err := tm.db.db.RunQueryIncrementally(ctx, "SELECT * FROM tasks", 1000, collect)
 	if err != nil {
 		return nil, err
 	}

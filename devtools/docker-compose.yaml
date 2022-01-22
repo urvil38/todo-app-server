@@ -13,6 +13,7 @@ services:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
     ports:
       - "5050:5050"   # Prometheus exporter metrics
+      - "55678:55678"
     depends_on:
       - jaeger-all-in-one
 

@@ -3,7 +3,6 @@ package task
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 )
 
@@ -12,17 +11,10 @@ var (
 )
 
 type Task struct {
-	Id        string    `json:"id"`
-	Name      string    `json:"name"`
-	CreatedAt TimeStamp `json:"created_at"`
-	UpdatedAt TimeStamp `json:"updated_at"`
-}
-
-type TimeStamp time.Time
-
-func (t TimeStamp) MarshalJSON() ([]byte, error) {
-	stemp := fmt.Sprintf("\"%s\"", time.Time(t).Format("2006-01-02T15:04:05"))
-	return []byte(stemp), nil
+	Id        string    `json:"id,omitempty"`
+	Name      string    `json:"name,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
 type Manager interface {
@@ -46,5 +38,5 @@ type TaskDeleter interface {
 
 type TaskGetter interface {
 	GetTask(ctx context.Context, id string) (Task, error)
-	ListTasks(ctx context.Context) ([]Task,error)
+	ListTasks(ctx context.Context) ([]Task, error)
 }

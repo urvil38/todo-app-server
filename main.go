@@ -22,7 +22,7 @@ func main() {
 	cfg.Dump(log.Logger.Out)
 
 	if cfg.DebugPort != "" {
-		debugServer, err := telementry.NewServer()
+		debugServer, err := telementry.NewServer(*cfg)
 		if err != nil {
 			log.Logger.Fatal(ctx, err)
 		}

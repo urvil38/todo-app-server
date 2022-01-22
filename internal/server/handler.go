@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 	taskpkg "github.com/urvil38/todo-app/internal/task"
 )
 
@@ -54,7 +54,7 @@ func (s *Server) listTasksHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getTaskHandler(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"]
+	id := chi.URLParam(r, "id")
 
 	task, err := s.taskManager.GetTask(r.Context(), id)
 	if err != nil {
@@ -91,7 +91,7 @@ func (s *Server) updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := mux.Vars(r)["id"]
+	id := chi.URLParam(r, "id")
 
 	task, err := s.taskManager.UpdateTask(r.Context(), id, p.Name)
 	if err != nil {
@@ -114,7 +114,7 @@ func (s *Server) updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"]
+	id := chi.URLParam(r, "id")
 
 	err := s.taskManager.DeleteTask(r.Context(), id)
 	if err != nil {

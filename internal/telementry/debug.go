@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/pprof"
 	"strings"
 
 	"contrib.go.opencensus.io/exporter/ocagent"
 	"contrib.go.opencensus.io/exporter/prometheus"
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 	prom_client "github.com/prometheus/client_golang/prometheus"
 	"github.com/urvil38/todo-app/internal/config"
 	"github.com/urvil38/todo-app/internal/version"
@@ -27,7 +28,7 @@ type RouteTagger func(route string, r *http.Request) string
 // information and census instrumentation.
 type Router struct {
 	http.Handler
-	mux    *mux.Router
+	mux    *chi.Mux
 	tagger RouteTagger
 }
 
@@ -39,18 +40,18 @@ func NewRouter(tagger RouteTagger) *Router {
 			return strings.Trim(route, "/")
 		}
 	}
-	mux := mux.NewRouter()
+	router := chi.NewRouter()
 	return &Router{
-		mux:     mux,
-		Handler: &ochttp.Handler{Handler: mux},
+		mux:     router,
+		Handler: &ochttp.Handler{Handler: router},
 		tagger:  tagger,
 	}
 }
 
 // Handle registers handler with the given route. It has the same routing
 // semantics as http.ServeMux.
-func (r *Router) Handle(route string, handler http.Handler) *mux.Route {
-	return r.mux.HandleFunc(route, func(w http.ResponseWriter, req *http.Request) {
+func (r *Router) Handle(method, route string, handler http.Handler) {
+	r.mux.MethodFunc(method, route, func(w http.ResponseWriter, req *http.Request) {
 		tag := r.tagger(route, req)
 		ochttp.WithRouteTag(handler, tag).ServeHTTP(w, req)
 	})
@@ -91,13 +92,13 @@ func Init(cfg config.Config, views ...*view.View) error {
 }
 
 // NewServer creates a new http.Handler for serving debug information.
-func NewServer() (http.Handler, error) {
+func NewServer(cfg config.Config) (http.Handler, error) {
 	pe, err := prometheus.NewExporter(prometheus.Options{
 		ConstLabels: prom_client.Labels{
 			"version":     version.Version,
 			"rev":         version.Commit,
 			"service":     "todo-server",
-			"environment": "dev",
+			"environment": cfg.Env,
 		},
 	})
 	if err != nil {
@@ -106,9 +107,16 @@ func NewServer() (http.Handler, error) {
 	mux := http.NewServeMux()
 	zpages.Handle(mux, "/")
 	mux.Handle("/statsz", pe)
+	mux.Handle("/version", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, fmt.Sprintf("version: %v\ncommit: %v", version.Version, version.Commit))
+	}))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, debugPage)
 	})
-
+	mux.HandleFunc("/debug/pprof/", pprof.Index)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 	return mux, nil
 }

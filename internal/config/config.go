@@ -13,6 +13,7 @@ import (
 
 // Config hold the configuration for todo server.
 type Config struct {
+	Env string
 	// Address on which server is running
 	Addr string
 
@@ -76,6 +77,7 @@ func (c *Config) dbConnInfo(host string) string {
 // Note: Call Init at the beginning of main function
 func Init(ctx context.Context) (cfg *Config, err error) {
 	cfg = &Config{
+		Env:        GetEnv("TODO_ENV", "dev"),
 		Addr:       GetEnv("TODO_ADDRESS", "localhost"),
 		Port:       GetEnv("TODO_PORT", "8080"),
 		DebugPort:  GetEnv("TODO_DEBUG_PORT", "8081"),

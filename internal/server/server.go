@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gorilla/mux"
+	chi_middleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/sirupsen/logrus"
 	"github.com/urvil38/todo-app/internal/config"
 	"github.com/urvil38/todo-app/internal/log"
@@ -63,6 +63,7 @@ func (s *Server) Run(ctx context.Context, cfg config.Config) {
 	}
 
 	mw := middleware.Chain(
+		chi_middleware.SetHeader("content-type", "application/json"),
 		middleware.RequestLog(s.logger),
 		middleware.Timeout(10*time.Second),
 	)
@@ -82,20 +83,18 @@ func (s *Server) Run(ctx context.Context, cfg config.Config) {
 	s.shutdown()
 }
 
-type MuxHandler func(route string, handler http.Handler) *mux.Route
-
-func (s *Server) Install(handle MuxHandler) {
-	handle("/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func (s *Server) Install(handle func(string, string, http.Handler)) {
+	handle(http.MethodGet, "/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "OK")
 	}))
-	handle("/version", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handle(http.MethodGet, "/version", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, fmt.Sprintf("version: %v\ncommit: %v", version.Version, version.Commit))
 	}))
-	handle("/task", middleware.Json()(http.HandlerFunc(s.createTaskHandler))).Methods("POST")
-	handle("/tasks", middleware.Json()(http.HandlerFunc(s.listTasksHandler))).Methods("GET")
-	handle("/task/{id}", middleware.Json()(http.HandlerFunc(s.getTaskHandler))).Methods("GET")
-	handle("/task/{id}", middleware.Json()(http.HandlerFunc(s.updateTaskHandler))).Methods("POST")
-	handle("/task/{id}", middleware.Json()(http.HandlerFunc(s.deleteTaskHandler))).Methods("DELETE")
+	handle(http.MethodPost, "/task", http.HandlerFunc(s.createTaskHandler))
+	handle(http.MethodGet, "/tasks", http.HandlerFunc(s.listTasksHandler))
+	handle(http.MethodGet, "/task/{id}", http.HandlerFunc(s.getTaskHandler))
+	handle(http.MethodPost, "/task/{id}", http.HandlerFunc(s.updateTaskHandler))
+	handle(http.MethodDelete, "/task/{id}", http.HandlerFunc(s.deleteTaskHandler))
 }
 
 func (s *Server) start() {
