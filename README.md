@@ -97,6 +97,30 @@ curl --request DELETE \
   --url http://localhost:8080/task/1
 ```
 
+## How to setup monitoring?
+
+- There is a `docker-compose.yaml` available, which consists of jaeger, grafana, otel-collector and prometheus.
+
+Start all the services by running following commands:
+```
+cd devtools
+docker-compose -f docker-compose.yaml up
+```
+
+- **Grafana** will be available on: `http://localhost:3000`
+
+- **Jaeger** will be available on: `http://localhost:16686/search`
+
+- **Prometheus** will be available on: `http://localhost:9090`
+<br></br>
+
+Grafana Dashboard:
+<br></br>
+![grafana-dashboard](./devtools/docs/img/grafana-dashboard.png)
+<br></br>
+1. Import a dashboard `devtools/TODO-Server-grafana-dashboard.json` in grafana. 
+2. In addition to that, you have to setup a prometheus datasource. Add prometheus URL `http://prometheus:9090` while configuring datasource.
+
 ## Debug Server:
 
 - The server records metrics and traces. These are available on [http://localhost:8081](http://localhost:8081)
