@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"contrib.go.opencensus.io/integrations/ocsql"
 	chi_middleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/sirupsen/logrus"
 	"github.com/urvil38/todo-app/internal/config"
@@ -18,7 +19,7 @@ import (
 	"github.com/urvil38/todo-app/internal/middleware"
 	"github.com/urvil38/todo-app/internal/postgres"
 	"github.com/urvil38/todo-app/internal/task"
-	"github.com/urvil38/todo-app/internal/telementry"
+	"github.com/urvil38/todo-app/internal/telemetry"
 	"github.com/urvil38/todo-app/internal/version"
 )
 
@@ -29,10 +30,10 @@ type Server struct {
 	taskManager task.Manager
 }
 
-func New(ctx context.Context,cfg config.Config) *Server {
+func New(ctx context.Context, cfg config.Config) *Server {
 	s := Server{
-		listenAddr:  cfg.Addr + ":" + cfg.Port,
-		logger:      log.Logger,
+		listenAddr: cfg.Addr + ":" + cfg.Port,
+		logger:     log.Logger,
 	}
 
 	if cfg.UseDB {
@@ -49,7 +50,7 @@ func (s *Server) Run(ctx context.Context, cfg config.Config) {
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM)
 
-	router := telementry.NewRouter(nil)
+	router := telemetry.NewRouter(nil)
 	s.Install(router.Handle)
 
 	views := append(ServerViews,
@@ -58,7 +59,9 @@ func (s *Server) Run(ctx context.Context, cfg config.Config) {
 		task.TaskDeletedCountView,
 	)
 
-	if err := telementry.Init(cfg, views...); err != nil {
+	views = append(views, ocsql.DefaultViews...)
+
+	if err := telemetry.Init(cfg, views...); err != nil {
 		s.logger.Fatal(ctx, err)
 	}
 
@@ -90,11 +93,11 @@ func (s *Server) Install(handle func(string, string, http.Handler)) {
 	handle(http.MethodGet, "/version", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, fmt.Sprintf("version: %v\ncommit: %v", version.Version, version.Commit))
 	}))
-	handle(http.MethodPost, "/task", http.HandlerFunc(s.createTaskHandler))
-	handle(http.MethodGet, "/tasks", http.HandlerFunc(s.listTasksHandler))
-	handle(http.MethodGet, "/task/{id}", http.HandlerFunc(s.getTaskHandler))
-	handle(http.MethodPost, "/task/{id}", http.HandlerFunc(s.updateTaskHandler))
-	handle(http.MethodDelete, "/task/{id}", http.HandlerFunc(s.deleteTaskHandler))
+	handle(http.MethodPost, "/v1/task", http.HandlerFunc(s.createTaskHandler))
+	handle(http.MethodGet, "/v1/tasks", http.HandlerFunc(s.listTasksHandler))
+	handle(http.MethodGet, "/v1/tasks/{id}", http.HandlerFunc(s.getTaskHandler))
+	handle(http.MethodPost, "/v1/tasks/{id}", http.HandlerFunc(s.updateTaskHandler))
+	handle(http.MethodDelete, "/v1/tasks/{id}", http.HandlerFunc(s.deleteTaskHandler))
 }
 
 func (s *Server) start() {

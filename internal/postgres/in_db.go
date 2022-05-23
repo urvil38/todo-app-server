@@ -36,7 +36,7 @@ func (tm *TaskManager) CreateTask(ctx context.Context, name string) (_ task.Task
 	INSERT INTO tasks(
 		name)
 	VALUES ($1)
-	RETURNING *
+	RETURNING id, name, created_at, updated_at
 	`, name).Scan(taskArgs(&t)...)
 	if err != nil {
 		return t, err
@@ -52,7 +52,7 @@ func (tm *TaskManager) UpdateTask(ctx context.Context, id, name string) (task.Ta
 	taskArgs := database.StructScanner(task.Task{})
 	var t task.Task
 
-	err := tm.db.db.QueryRow(ctx, "UPDATE tasks SET name = $1 WHERE id = $2 RETURNING *", name, id).Scan(taskArgs(&t)...)
+	err := tm.db.db.QueryRow(ctx, "UPDATE tasks SET name = $1 WHERE id = $2 RETURNING id, name, created_at, updated_at", name, id).Scan(taskArgs(&t)...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return t, task.ErrTaskNotFound
@@ -71,7 +71,7 @@ func (tm *TaskManager) DeleteTask(ctx context.Context, id string) error {
 	taskArgs := database.StructScanner(task.Task{})
 	var t task.Task
 
-	err := tm.db.db.QueryRow(ctx, "DELETE FROM tasks WHERE id = $1 RETURNING *", id).Scan(taskArgs(&t)...)
+	err := tm.db.db.QueryRow(ctx, "DELETE FROM tasks WHERE id = $1 RETURNING id, name, created_at, updated_at", id).Scan(taskArgs(&t)...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return task.ErrTaskNotFound
@@ -100,7 +100,7 @@ func (tm *TaskManager) ListTasks(ctx context.Context) ([]task.Task, error) {
 		return nil
 	}
 
-	err := tm.db.db.RunQueryIncrementally(ctx, "SELECT * FROM tasks", 1000, collect)
+	err := tm.db.db.RunQueryIncrementally(ctx, "SELECT id, name, created_at, updated_at FROM tasks", 5000, collect)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func (tm *TaskManager) GetTask(ctx context.Context, id string) (task.Task, error
 	taskArgs := database.StructScanner(task.Task{})
 	var t task.Task
 
-	err := tm.db.db.QueryRow(ctx, "SELECT * FROM tasks WHERE id = $1", id).Scan(taskArgs(&t)...)
+	err := tm.db.db.QueryRow(ctx, "SELECT id, name, created_at, updated_at FROM tasks WHERE id = $1", id).Scan(taskArgs(&t)...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return t, task.ErrTaskNotFound

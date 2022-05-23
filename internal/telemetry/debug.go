@@ -1,4 +1,4 @@
-package telementry
+package telemetry
 
 import (
 	"fmt"
@@ -95,8 +95,6 @@ func Init(cfg config.Config, views ...*view.View) error {
 func NewServer(cfg config.Config) (http.Handler, error) {
 	pe, err := prometheus.NewExporter(prometheus.Options{
 		ConstLabels: prom_client.Labels{
-			"version":     version.Version,
-			"rev":         version.Commit,
 			"service":     "todo-server",
 			"environment": cfg.Env,
 		},
