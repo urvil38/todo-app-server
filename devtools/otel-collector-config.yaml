@@ -12,7 +12,7 @@ receivers:
 
 exporters:
   prometheus:
-    endpoint: "0.0.0.0:5050"
+    endpoint: "host.docker.internal:5050"
 
   logging:
 

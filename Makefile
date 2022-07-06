@@ -4,7 +4,7 @@ GOOS := $(shell go env GOOS)
 CGO_ENABLED := 0
 
 NAME := todo-app
-BIN := todo-app-server
+BIN := bin/todo-app-server
 PKG := github.com/urvil38/todo-app
 ECR_REGISTRY := 910481930765.dkr.ecr.ap-south-1.amazonaws.com
 
@@ -42,11 +42,17 @@ aws-push:
 	docker push $(ECR_REGISTRY)/$(NAME):$(VERSION)
 	docker logout
 
-clean:
-	rm -f $(BIN) -y
+fmt:
+	gofmt -l -w -s . 
 
-go-build:
+vet:
+	$(GO) vet -all ./...
+
+go-build: fmt vet
 	CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) $(GO) build -o $(BIN) -ldflags $(LDFLAGS)
+
+clean:
+	rm -rf bin
 
 .PHONY: run
 run: run-server

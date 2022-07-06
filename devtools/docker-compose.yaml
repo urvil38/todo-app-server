@@ -14,6 +14,7 @@ services:
     ports:
       - "5050:5050"   # Prometheus exporter metrics
       - "55678:55678"
+    network_mode: host
     depends_on:
       - jaeger-all-in-one
 

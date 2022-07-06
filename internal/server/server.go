@@ -19,7 +19,6 @@ import (
 	"github.com/urvil38/todo-app/internal/postgres"
 	"github.com/urvil38/todo-app/internal/task"
 	"github.com/urvil38/todo-app/internal/telementry"
-	"github.com/urvil38/todo-app/internal/version"
 )
 
 type Server struct {
@@ -29,10 +28,10 @@ type Server struct {
 	taskManager task.Manager
 }
 
-func New(ctx context.Context,cfg config.Config) *Server {
+func New(ctx context.Context, cfg config.Config) *Server {
 	s := Server{
-		listenAddr:  cfg.Addr + ":" + cfg.Port,
-		logger:      log.Logger,
+		listenAddr: cfg.Addr + ":" + cfg.Port,
+		logger:     log.Logger,
 	}
 
 	if cfg.UseDB {
@@ -63,9 +62,12 @@ func (s *Server) Run(ctx context.Context, cfg config.Config) {
 	}
 
 	mw := middleware.Chain(
+		chi_middleware.RequestID,
+		chi_middleware.RealIP,
 		chi_middleware.SetHeader("content-type", "application/json"),
 		middleware.RequestLog(s.logger),
-		middleware.Timeout(10*time.Second),
+		chi_middleware.Timeout(1*time.Minute),
+		chi_middleware.Recoverer,
 	)
 
 	s.server = &http.Server{
@@ -77,8 +79,8 @@ func (s *Server) Run(ctx context.Context, cfg config.Config) {
 
 	go s.start()
 
-	<-signalCh
-	s.logger.Info("Received SIGINT Signal")
+	sig := <-signalCh
+	s.logger.Infof("Received %v Signal", sig)
 
 	s.shutdown()
 }
@@ -87,14 +89,11 @@ func (s *Server) Install(handle func(string, string, http.Handler)) {
 	handle(http.MethodGet, "/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "OK")
 	}))
-	handle(http.MethodGet, "/version", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, fmt.Sprintf("version: %v\ncommit: %v", version.Version, version.Commit))
-	}))
-	handle(http.MethodPost, "/task", http.HandlerFunc(s.createTaskHandler))
-	handle(http.MethodGet, "/tasks", http.HandlerFunc(s.listTasksHandler))
-	handle(http.MethodGet, "/task/{id}", http.HandlerFunc(s.getTaskHandler))
-	handle(http.MethodPost, "/task/{id}", http.HandlerFunc(s.updateTaskHandler))
-	handle(http.MethodDelete, "/task/{id}", http.HandlerFunc(s.deleteTaskHandler))
+	handle(http.MethodPost, "/v1/task", http.HandlerFunc(s.createTaskHandler))
+	handle(http.MethodGet, "/v1/tasks", http.HandlerFunc(s.listTasksHandler))
+	handle(http.MethodGet, "/v1/task/{id}", http.HandlerFunc(s.getTaskHandler))
+	handle(http.MethodPost, "/v1/task/{id}", http.HandlerFunc(s.updateTaskHandler))
+	handle(http.MethodDelete, "/v1/task/{id}", http.HandlerFunc(s.deleteTaskHandler))
 }
 
 func (s *Server) start() {

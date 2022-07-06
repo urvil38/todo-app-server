@@ -10,15 +10,14 @@ import (
 	"strings"
 
 	_ "github.com/jackc/pgx/v4/stdlib" // for pgx driver
-	logpkg "github.com/urvil38/todo-app/internal/log"
 	"github.com/urvil38/todo-app/internal/config"
 	"github.com/urvil38/todo-app/internal/database"
+	logpkg "github.com/urvil38/todo-app/internal/log"
 )
 
 var (
 	log = logpkg.Logger
 )
-
 
 func main() {
 	flag.Usage = func() {

@@ -40,7 +40,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"url":          r.URL,
 		"responseSize": w2.length,
 		"userAgent":    r.UserAgent(),
-		"remoteIP":     remoteAddr(r),
+		"remoteAddr":   r.RemoteAddr,
 		"referer":      r.Referer(),
 		"status":       translateStatus(w2.status),
 		"latency":      time.Since(start),
