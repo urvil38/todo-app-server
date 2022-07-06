@@ -14,7 +14,14 @@ import (
 func OpenDB(ctx context.Context, cfg *config.Config) (_ *DB, err error) {
 
 	// Wrap the postgres driver with our own wrapper, which adds OpenCensus instrumentation.
-	ocDriver, err := ocsql.Register("pgx", ocsql.WithAllTraceOptions())
+	ocDriver, err := ocsql.Register("pgx", func(o *ocsql.TraceOptions) {
+		opt := ocsql.AllTraceOptions
+		opt.RowsNext = false
+		opt.QueryParams = false
+		opt.RowsClose = false
+		opt.RowsAffected = false
+		*o = opt
+	})
 	if err != nil {
 		return nil, fmt.Errorf("unable to register the ocsql driver: %v", err)
 	}

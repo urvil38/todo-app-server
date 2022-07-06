@@ -62,7 +62,7 @@ TODO_DATABASE_PASSWORD=postgres TODO_USE_DB=true TODO_LOG_LEVEL=debug ./todo-app
 
 ```
 curl --request POST \
-  --url http://localhost:8080/task \
+  --url http://localhost:8080/v1/task \
   --header 'Content-Type: application/json' \
   --data '{"name": "task1"}'
 ```
@@ -71,21 +71,21 @@ curl --request POST \
 
 ```
 curl --request GET \
-  --url http://localhost:8080/task/1
+  --url http://localhost:8080/v1/tasks/1
 ```
 
 ### List Tasks:
 
 ```
 curl --request GET \
-  --url http://localhost:8080/tasks
+  --url http://localhost:8080/v1/tasks
 ```
 
 ### Update Task:
 
 ```
 curl --request POST \
-  --url http://localhost:8080/task/1 \
+  --url http://localhost:8080/v1/tasks/1 \
   --header 'Content-Type: application/json' \
   --data '{"name": "updated_task_1"}'
 ```
@@ -94,7 +94,7 @@ curl --request POST \
 
 ```
 curl --request DELETE \
-  --url http://localhost:8080/task/1
+  --url http://localhost:8080/v1/tasks/1
 ```
 
 ## How to setup monitoring?

@@ -8,7 +8,7 @@ import (
 	"github.com/urvil38/todo-app/internal/config"
 	"github.com/urvil38/todo-app/internal/log"
 	"github.com/urvil38/todo-app/internal/server"
-	"github.com/urvil38/todo-app/internal/telementry"
+	"github.com/urvil38/todo-app/internal/telemetry"
 )
 
 func main() {
@@ -22,7 +22,7 @@ func main() {
 	cfg.Dump(log.Logger.Out)
 
 	if cfg.DebugPort != "" {
-		debugServer, err := telementry.NewServer(*cfg)
+		debugServer, err := telemetry.NewServer(*cfg)
 		if err != nil {
 			log.Logger.Fatal(ctx, err)
 		}
