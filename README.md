@@ -45,7 +45,7 @@ TODO_DATABASE_PASSWORD=postgres ./devtools/create_local_db.sh
 - Store tasks in memory
 
 ```
-TODO_LOG_LEVEL=debug ./todo-app-server
+TODO_LOG_LEVEL=debug ./bin/todo-app-server
 ```
 
 OR
@@ -53,7 +53,7 @@ OR
 - Store tasks in db
 
 ```
-TODO_DATABASE_PASSWORD=postgres TODO_USE_DB=true TODO_LOG_LEVEL=debug ./todo-app-server
+TODO_DATABASE_PASSWORD=postgres TODO_USE_DB=true TODO_LOG_LEVEL=debug ./bin/todo-app-server
 ```
 
 ## API
@@ -71,7 +71,7 @@ curl --request POST \
 
 ```
 curl --request GET \
-  --url http://localhost:8080/v1/tasks/1
+  --url http://localhost:8080/v1/task/1
 ```
 
 ### List Tasks:
@@ -85,7 +85,7 @@ curl --request GET \
 
 ```
 curl --request POST \
-  --url http://localhost:8080/v1/tasks/1 \
+  --url http://localhost:8080/v1/task/1 \
   --header 'Content-Type: application/json' \
   --data '{"name": "updated_task_1"}'
 ```
@@ -94,7 +94,7 @@ curl --request POST \
 
 ```
 curl --request DELETE \
-  --url http://localhost:8080/v1/tasks/1
+  --url http://localhost:8080/v1/task/1
 ```
 
 ## How to setup monitoring?

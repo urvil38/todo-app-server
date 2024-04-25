@@ -79,7 +79,7 @@ func (tm *TaskManager) DeleteTask(ctx context.Context, id string) error {
 			return err
 		}
 	}
-	
+
 	task.RecordTaskDelete(ctx)
 	return nil
 }

@@ -2,19 +2,19 @@ version: "2"
 services:
 
   jaeger-all-in-one:
-    image: jaegertracing/all-in-one:1.17
+    image: jaegertracing/all-in-one:1.56
     ports:
       - "16686:16686"
+      - "4317:4317"
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib-dev:latest
-    command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
+    image: otel/opentelemetry-collector-contrib:0.98.0
+    command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
     ports:
-      - "5050:5050"   # Prometheus exporter metrics
-      - "55678:55678"
-    network_mode: host
+      - "8889:8889"   # Prometheus exporter metrics
+      - "55678:55678" # Opencencus exporter traces
     depends_on:
       - jaeger-all-in-one
 

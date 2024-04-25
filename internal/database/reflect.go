@@ -23,16 +23,17 @@ import (
 // to a struct.
 //
 // Example:
-//   type Player struct { Name string; Score int }
-//   playerScanArgs := database.StructScanner(Player{})
-//   err := db.RunQuery(ctx, "SELECT name, score FROM players", func(rows *sql.Rows) error {
-//       var p Player
-//       if err := rows.Scan(playerScanArgs(&p)...); err != nil {
-//           return err
-//       }
-//       // use p
-//       return nil
-//   })
+//
+//	type Player struct { Name string; Score int }
+//	playerScanArgs := database.StructScanner(Player{})
+//	err := db.RunQuery(ctx, "SELECT name, score FROM players", func(rows *sql.Rows) error {
+//	    var p Player
+//	    if err := rows.Scan(playerScanArgs(&p)...); err != nil {
+//	        return err
+//	    }
+//	    // use p
+//	    return nil
+//	})
 func StructScanner(s interface{}) func(p interface{}) []interface{} {
 	v := reflect.ValueOf(s)
 	if v.Kind() == reflect.Ptr {
@@ -121,9 +122,10 @@ func (n nullPtr) Value() (driver.Value, error) {
 // CollectStructs scans the the rows from the query into structs and appends
 // them to pslice, which must be a pointer to a slice of structs.
 // Example:
-//   type Player struct { Name string; Score int }
-//   var players []Player
-//   err := db.CollectStructs(ctx, &players, "SELECT name, score FROM players")
+//
+//	type Player struct { Name string; Score int }
+//	var players []Player
+//	err := db.CollectStructs(ctx, &players, "SELECT name, score FROM players")
 func (db *DB) CollectStructs(ctx context.Context, pslice interface{}, query string, args ...interface{}) error {
 	v := reflect.ValueOf(pslice)
 	if v.Kind() != reflect.Ptr {
